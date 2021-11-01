@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.applet.Applet; 
-import java.util.Scanner;
+import javax.swing.*;
+import netscape.javascript.*;
 public class Bezier extends Applet {
 	
 	
@@ -9,12 +10,16 @@ public class Bezier extends Applet {
 	Image im; 
 	Graphics img;
 	double k = .025; 
-	int n=6;
-	int moveflag = n; //indica punctul de control deplasate
+	public int n=8;
+	//String s;
+	int moveflag ; //indica punctul de control deplasate
 	
 	Button restart; 
 	
 	public void init(){
+		//s=getParameter("nrpuncte");
+	//	n=Integer.valueOf(s).intValue();
+		moveflag=n+1;
 		cp = new Point[n]; 
 		im = createImage(size().width,size().height);
 		img = im.getGraphics(); 
@@ -40,82 +45,36 @@ public class Bezier extends Applet {
 		int x = cp[0].x, y = cp[0].y; 
 		img.setColor(Color.black); 
 	for(double t=k;t<=1+k;t+=k){
-		for(int i=0;i<n;i++)
-		{
-		Point p = Bernstein(cp[i],t); }
-			 img.drawLine(x, y, p.x, p.y); 
-			 x = p.x;
-			 y = p.y; 
 		
-	 }
+		    Point p = Bernstein(cp,t); 
+			img.drawLine(x, y, p.x, p.y); 
+			x = p.x;
+			y = p.y; 
+		
+	}
 	}
 		g.drawImage(im,0,0,this); 
 	}
 	
-	//public Point Bernstein(Point p1, Point p2, Point p3, Point p4, Point p5, Point p6, double t){
-	// double x = (1-t)*(1-t)*(1-t)*(1-t)*pl.x + (4*t)*(1-t)*(1-t)*(1-t)*p2.x + (6*t*t)*(1-t)*(1-t)*p3.x + (4*t*t*t)*(1-t)*p4.x + t*t*t*t*p5.x; 
-	// double y = (1-t)*(1-t)*(1-t)*(1-t)*pl.y + (4*t)*(1-t)*(1-t)*(1-t)*p2.y + (6*t*t)*(1-t)*(1-t)*p3.y + (4*t*t*t)*(1-t)*p4.y + t*t*t*t*p5.y;
-	//double x=(1-t)*(1-t)*(1-t)*(1-t)*(1-t)*p1.x+(5*t)*(1-t)*(1-t)*(1-t)*(1-t)*p2.x+(10*t*t)*(1-t)*(1-t)*(1-t)*p3.x+(10*t*t*t)*(1-t)*(1-t)*p4.x+(5*t*t*t*t)*(1-t)*p5.x+t*t*t*t*t*p6.x;
-	//double y=(1-t)*(1-t)*(1-t)*(1-t)*(1-t)*p1.y+(5*t)*(1-t)*(1-t)*(1-t)*(1-t)*p2.y+(10*t*t)*(1-t)*(1-t)*(1-t)*p3.y+(10*t*t*t)*(1-t)*(1-t)*p4.y+(5*t*t*t*t)*(1-t)*p5.y+t*t*t*t*t*p6.y;
-	/*double x;
-	double y;
-	int tn=1,tk=1,tnk=1;
-	for(int i=1;i<n;i++)
-	{
-		for(int j=1;j<=k;j++)
-		{
-			for(int l=1;l<=(n-k);l++)
-				{tnk=tnk*l;} //tnk=(n-k)!
-			tk=tk*j; // tk=k!
-		}
-		tn=tn*i; //tn=n!
-	}
-	double comb;
-	if(k==0)
-		comb=1;
-	else
-		if(n==k)
-			comb=1;
-		else
-			comb=tn/(tk*tnk);
-	for(int i=0;i<n;i++)
-	{
-		x=(1-t)*pi.x;
-	}*/
-	public Point Bernstein(Point p[], double t){
-	double x=0,y=0;
-	double tn=1,tk=1,tnk=1;
-	double a=1,b=(1-t);
-	for(int i=1;i<=n;i++)
-		tn=tn*i;
-	for(int k=0;k<n;k++)
-	{
-		for(int i=0;i<k;i++)
-		{
-			if(i>0)
-				a=a*t;
-			tk=tk*i;
-			if(tk==0)
-				tk=1;
-			for(int j=0;j<(n-k);j++)
-			{
-				b=(1-t)*b;
-				tnk=tnk*j;
-				if(tnk==0)
-					tnk=1;
-				//x+=(tn/(tk*tnk))*a*b*p[k+1].x;
-				//y+=(tn/(tk*tnk))*a*b*p[k+1].y;
-				x+=(tn/(tk*tnk))*Math.pow(t,k)*Math.pow((1-t),(n-k))*p[k+1].x;
-				y+=(tn/(tk*tnk))*Math.pow(t,k)*Math.pow((1-t),(n-k))*p[k+1].y;
-			}
-		}
-		
-		
+	public double fact(int nr){
+		double f=1;
+		for(int i=1;i<=nr;i++)
+			f*=i;
+		return f;
 	}
 	
 	
+	public Point Bernstein(Point[] p, double t){
+		double x,y;
+		int nr=p.length;
+		x=Math.pow(1-t,nr-1)*p[0].x;
+		y=Math.pow(1-t,nr-1)*p[0].y;
+		for(int i=1;i<nr;i++){
+			x+=(fact(nr-1)/(fact(nr-1-i)*fact(i)))*Math.pow(t,i)*Math.pow(1-t,nr-1-i)*p[i].x;
+			y+=(fact(nr-1)/(fact(nr-1-i)*fact(i)))*Math.pow(t,i)*Math.pow(1-t,nr-1-i)*p[i].y;
+		}
 	
-	return new Point ((int)Math.round(x), (int)Math.round(y)); 
+		return new Point ((int)Math.round(x), (int)Math.round(y)); 
 	} 
 	
 	public boolean action(Event e, Object o) {
@@ -150,7 +109,7 @@ public class Bezier extends Applet {
 	 return true; 
 	 }
 	public boolean mouseUp(Event evt, int x, int y) {
-		moveflag = n; 
+		moveflag = n+1; 
 		return true; 
 		} 
 }
